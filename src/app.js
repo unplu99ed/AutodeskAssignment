@@ -1,5 +1,5 @@
-const HealthService = require('../services/healthService');
-const healthService = new HealthService(require('../../config').healthServices);
+const HealthService = require('./services/healthService');
+const healthService = new HealthService(require('../config').healthServices);
 
 
 healthService.GetHealthStatusesOfAllServices().then(data => {
