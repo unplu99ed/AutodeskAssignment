@@ -2,7 +2,7 @@
 const HealthServiceRepo = require('../repository/healthServiceRepo');
 const { CircularArray } = require('circular-array');
 const PARSERS_LOCATIONS = '../healthServicesParsers'
-const intervalConfig = 1 * 1000;
+const intervalConfig = 60 * 1000;
 
 const initHealthService = (healthServiceConfig) => {
   const praserLocaiton = PARSERS_LOCATIONS + '/' + healthServiceConfig.PraserFileName;
@@ -13,13 +13,6 @@ const initHealthService = (healthServiceConfig) => {
   };
 }
 
-const gethealthCheckJsonResults = async (instance) => {
-  return (await instance.GetHealthStatusesOfAllServices()).reduce((hash, result) => {
-    hash[result.name] = result.status
-    return hash;
-  }, {});
-}
-
 const updateResultsInServicesRepo = (instance, statusResults) => {
   instance.healthServices.forEach(service => {
     service.cachedHistory.push(statusResults[service.config.name]);
@@ -27,7 +20,7 @@ const updateResultsInServicesRepo = (instance, statusResults) => {
 }
 
 const checkAndUpdateServicesHealth = async (instance) => {
-  const statusResults = await gethealthCheckJsonResults(instance);
+  const statusResults = await instance.GetHealthStatusesOfAllServices()
   updateResultsInServicesRepo(instance, statusResults)
 }
 
@@ -53,6 +46,7 @@ const checkHistoryStatistics = (healthService) => {
 class healthService {
 
   constructor(healthServiceConfigs) {
+
     this.healthServices = healthServiceConfigs.map(healthServiceConfig => {
       return initHealthService(healthServiceConfig);
     })
@@ -60,8 +54,12 @@ class healthService {
     startScheduleCheck(intervalConfig, this);
   }
 
-  GetHealthStatusesOfAllServices() {
-    return Promise.all(this.healthServices.map(healthService => healthService.repo.getIsAlive()));
+  async GetHealthStatusesOfAllServices() {
+    const HealthStatusesOfAllServices = await Promise.all(this.healthServices.map(healthService => healthService.repo.getIsAlive()))
+    return HealthStatusesOfAllServices.reduce((hash, result) => {
+      hash[result.name] = result.status
+      return hash;
+    }, {});;
   }
 
   GetServicesAvailability() {

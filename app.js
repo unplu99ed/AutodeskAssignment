@@ -1,18 +1,50 @@
-const HealthService = require('./src/services/healthService');
-const healthService = new HealthService(require('./config').healthServices);
+// NPM imports
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+
+// code imports
+const config = require('./config.js');
+const appRouter = require('./src/router/appRouter.js');
+
+const app = express();
 
 
-healthService.GetHealthStatusesOfAllServices().then(data => {
-  obj = data.reduce((hash, result) => {
-    hash[result.name] = result.status
-    return hash;
-  }, {});
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+const setExpress = async () => {
+
+  appRouter.register(app, config);
+  app.use('/', express.static(path.join(__dirname, '../client/dist/client')));
+
+  app.listen(config.webServer.port, () => console.log('http://localhost:' + config.webServer.port + '/'))
+
+  // catch 404 and forward to error handler
+  app.use(function (req, res, next) {
+    next(createError(404));
+  });
+
+  // error handler
+  app.use(function (err, req, res, next) {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
+  });
+}
 
 
-  console.log(data)
-})
+setExpress();
 
-setTimeout(() => {
-  const results = healthService.GetServicesAvailability();
-  console.log(results)
-}, 15000);
+
+
+
+
