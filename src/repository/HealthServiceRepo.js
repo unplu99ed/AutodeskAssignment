@@ -1,4 +1,6 @@
-class HealthServiceRepo {
+const fetch = require('node-fetch');
+
+class healthServiceRepo {
   constructor(name, url, parser) {
     this.name = name;
     this.url = url;
@@ -6,9 +8,18 @@ class HealthServiceRepo {
   }
 
   async getIsAlive() {
-    return true;
+    try {
+      const response = await fetch(this.url);
+      return {
+        name: this.name,
+        status: await this.parser(await response.text())
+      };
+    }
+    catch (error) {
+      throw error;
+    }
   }
 
 }
 
-module.exports = HealthServiceRepo;
+module.exports = healthServiceRepo;
