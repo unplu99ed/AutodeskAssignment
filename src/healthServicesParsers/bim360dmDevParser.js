@@ -1,6 +1,15 @@
 module.exports = (respnseData) => {
-  const data = JSON.parse(respnseData);
-  return data.status.overall.toLowerCase() === 'good';
+  let parsingResult = false;
+
+  try {
+    const data = JSON.parse(respnseData);
+    parsingResult = data.status.overall.toLowerCase() === 'good';
+  }
+  catch (error) {
+    parsingResult = false;
+  }
+
+  return parsingResult
 }
 
 

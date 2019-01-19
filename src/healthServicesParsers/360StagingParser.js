@@ -2,6 +2,15 @@ const util = require('util');
 const { parseString } = require('xml2js');
 
 module.exports = async (respnseData) => {
-  const data = await util.promisify(parseString)(respnseData);
-  return data.HealthCheck.status[0].toLowerCase() === 'good';
+  let parsingResult = false;
+  
+  try {
+    const data = await util.promisify(parseString)(respnseData);
+    parsingResult = data.HealthCheck.status[0].toLowerCase() === 'good';
+  }
+  catch (error) {
+    parsingResult = false;
+  }
+
+  return parsingResult
 }

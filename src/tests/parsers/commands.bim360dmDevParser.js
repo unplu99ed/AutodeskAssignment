@@ -3,7 +3,7 @@ const assert = require('chai').assert;
 const parser = require('../../healthServicesParsers/commands.bim360dmDevParser');
 
 
-describe('360StagingParser', function () {
+describe('commands.bim360dmDevParser', function () {
 
   it('send expected data', async (done) => {
     const data = {
